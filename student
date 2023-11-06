@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0;
+
+contract Bank {
+    struct Account {
+        uint balance;  // Structure to represent an account with a balance
+    }
+
+    mapping(address => mapping(uint => Account)) public user_accounts;  // Mapping to store user accounts by address and account ID
+    mapping(address => uint) public numAccounts;  // Mapping to store the number of accounts for each user
+
+    // Function to create a new bank account with a given account ID
+    function createAccount(uint accountId) public {
+        require(accountId > 0, "Account ID should be greater than 0");  // Require that the account ID is valid
+        require(user_accounts[msg.sender][accountId].balance == 0, "Account already created with this ID");  // Require that the account doesn't already exist
+
+        // Create a new account for the sender with the given account ID and initialize the balance to 0
+        user_accounts[msg.sender][accountId] = Account({
+            balance: 0
+        });
+        numAccounts[msg.sender]++;  // Increment the number of accounts for the sender
+    }
+
+    // Function to deposit funds into an existing account
+    function deposit(uint accountId, uint amount) public {
+        require(accountId > 0, "Account ID should be greater than 0");  // Require that the account ID is valid
+        require(user_accounts[msg.sender][accountId].balance >= 0, "Account not created with this ID");  // Require that the account exists
+
+        // Increase the balance of the specified account with the provided amount
+        user_accounts[msg.sender][accountId].balance += amount;
+    }
+
+    // Function to withdraw funds from an existing account
+    function withdraw(uint accountId, uint amount) public {
+        require(accountId > 0, "Account ID should be greater than 0");  // Require that the account ID is valid
+        require(user_accounts[msg.sender][accountId].balance >= amount, "Insufficient balance in the account");  // Require sufficient balance
+
+        // Decrease the balance of the specified account by the provided amount
+        user_accounts[msg.sender][accountId].balance -= amount;
+    }
+
+    // Function to get the balance of an existing account
+    function getBalance(uint accountId) public view returns (uint) {
+        require(accountId > 0, "Account ID should be greater than 0");  // Require that the account ID is valid
+        require(user_accounts[msg.sender][accountId].balance >= 0, "Account not created with this ID");  // Require that the account exists
+
+        // Return the balance of the specified account
+        return user_accounts[msg.sender][accountId].balance;
+    }
+
+    // Function to transfer funds from one account to another
+    function transfer(uint fromAccountId, uint toAccountId, uint amount) public {
+        require(fromAccountId > 0 && toAccountId > 0, "Account ID should be greater than 0");  // Require that both account IDs are valid
+        require(user_accounts[msg.sender][fromAccountId].balance >= amount, "Insufficient balance in the source account");  // Require sufficient balance in the source account
+
+        // Perform the transfer by reducing the balance of the source account and increasing the balance of the destination account
+        user_accounts[msg.sender][fromAccountId].balance -= amount;
+        user_accounts[msg.sender][toAccountId].balance += amount;
+    }
+}
