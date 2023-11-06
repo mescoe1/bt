@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract StudentData {
+    struct Student {
+        string name;
+        uint256 rollNumber;
+        uint256 age;
+    }
+
+    Student[] public students;  // An array to store student records
+    address public owner;  // Address of the owner of the contract
+
+    constructor() {
+        owner = msg.sender;  // Set the contract creator's address as the owner
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this operation");  // Modifier to restrict access to the owner
+        _;
+    }
+
+    // Function to add a new student to the records, accessible only by the owner
+    function addStudent(string memory _name, uint256 _rollNumber, uint256 _age) public onlyOwner {
+        Student memory newStudent = Student(_name, _rollNumber, _age);
+        students.push(newStudent);  // Create a new student record and add it to the array
+    }
+
+    // Function to get the total count of student records
+    function getStudentCount() public view returns (uint256) {
+        return students.length;
+    }
+
+    // Function to get the details of a specific student by index
+    function getStudent(uint256 index) public view returns (string memory, uint256, uint256) {
+        require(index < students.length, "Invalid index");  // Check if the index is within the array bounds
+        Student memory student = students[index];  // Get the student record at the specified index
+        return (student.name, student.rollNumber, student.age);  // Return the student's name, roll number, and age
+    }
+
+    // Fallback function to reject incoming Ether
+    fallback() external {
+        revert("Fallback function: This contract does not accept Ether.");
+    }
+}
